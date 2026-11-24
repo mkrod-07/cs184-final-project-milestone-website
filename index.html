@@ -1,89 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-	<style>
-			h1 {
-				text-align: center;
-			}
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snowjelly: Project Proposal | CS 184 Fall 2026</title>
+<style>
+  :root {
+    --ink: #1c2530;
+    --muted: #5b6875;
+    --line: #d9e0e7;
+    --paper: #ffffff;
+    --wash: #f3f7fa;
+    --snow: #2f6f9f;
+    --jelly: #c2476b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--wash);
+    color: var(--ink);
+    font: 16px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 56px 40px 72px;
+    background: var(--paper);
+    min-height: 100vh;
+  }
+  header { border-bottom: 3px solid var(--ink); padding-bottom: 20px; margin-bottom: 8px; }
+  .eyebrow {
+    font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  h1 { font-size: 40px; line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h1 .s { color: var(--snow); }
+  h1 .j { color: var(--jelly); }
+  .subtitle { font-size: 19px; color: var(--muted); margin: 0; }
+  h2 {
+    font-size: 24px; margin: 44px 0 12px; padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  h3 { font-size: 17px; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--snow); }
+  .team { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .team li { margin: 0; padding: 8px 12px; background: var(--wash); border-left: 3px solid var(--snow); }
+  .team li:nth-child(even) { border-left-color: var(--jelly); }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--ink); }
+  td:first-child { white-space: nowrap; }
+  .measure td:first-child { white-space: normal; width: 30%; font-weight: 600; }
+  .note { background: var(--wash); padding: 12px 14px; border-left: 3px solid var(--jelly); }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 
-			.container {
-				margin: 0 auto;
-				padding: 60px 20%;
-			}
+  @media (max-width: 640px) {
+    main { padding: 32px 20px 48px; }
+    h1 { font-size: 30px; }
+    .team { grid-template-columns: 1fr; }
+    table { font-size: 14px; }
+    td:first-child { white-space: normal; }
+  }
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    main { max-width: none; padding: 0; min-height: 0; }
+    h2 { break-after: avoid; margin-top: 28px; }
+    h3 { break-after: avoid; }
+    tr, li, .note { break-inside: avoid; }
+    a { color: var(--ink); }
+    .team li, .note { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">CS 184 Final Project Proposal · Fall 2026</p>
+    <h1><span class="s">Snow</span><span class="j">jelly</span></h1>
+    <p class="subtitle">Real-Time Snow and Jelly Simulation with MLS-MPM</p>
+  </header>
 
-			figure {
-				text-align: center;
-			}
+  <h2>Summary</h2>
+  <p>Snowjelly is a real-time, interactive 3D simulator for snow and jelly that runs in the browser on WebGPU. One Moving Least Squares Material Point Method (MLS-MPM) solver drives both materials; only the constitutive model changes, so snow fractures and packs while jelly squashes and bounces back. Users throw snowballs, drop jelly blocks, and switch materials live.</p>
 
-			img {
-				display: inline-block;
-			}
+  <h2>Team</h2>
+  <p>All four members are enrolled in CS 184, so we follow the CS 184 format.</p>
+  <ul class="team">
+    <li>Ziniu Zheng</li>
+    <li>Ruize Zheng</li>
+    <li>Ian Yang</li>
+    <li>Michael Kenneth Rodriguez-Thayer</li>
+  </ul>
 
-			body {
-				font-family: 'Inter', sans-serif;
-				line-height: 1.4;
-				color: #32323a;
-				background-color: #ffffff;
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				width: 40%;
-				height: 100%;
-				margin: 0;
-				position: absolute;
-				left: 50%;
-				transform: translateX(-50%);
-			}
+  <h2>Problem Description</h2>
+  <p><strong>The problem.</strong> Materials such as snow sit between solids and fluids: they hold a shape, then fracture, compact, and pile up. Mesh-based solids handle fracture poorly, and particle fluid solvers cannot hold a shape. The Material Point Method (MPM) handles both by carrying material state on particles and solving momentum on a background grid. Most MPM results are offline renders that take minutes per frame. We want the same behavior at interactive rates, in a browser tab, with no install.</p>
+  <p><strong>Why it matters.</strong> Real-time simulation of deformable and granular materials is what games, VR, and interactive tools need. It also shows a central idea of physically based animation: one solver produces very different materials when only the stress model changes. A side-by-side of snow and jelly makes that idea visible.</p>
+  <p><strong>Where it is challenging.</strong></p>
+  <ul>
+    <li><strong>Parallel particle-to-grid transfer.</strong> Many particles write to the same grid node at once. A GPU compute shader needs atomic operations or a scatter-free reformulation to avoid data races, and WGSL atomics work only on integers, so values must be encoded in fixed point.</li>
+    <li><strong>Snow plasticity on the GPU.</strong> The snow model clamps the singular values of each particle's elastic deformation gradient every step. That requires a robust 3x3 SVD written in WGSL, in single precision.</li>
+    <li><strong>Stability.</strong> Explicit MPM is limited by a small time step. Stiff snow parameters can blow up, so we must balance stiffness, substeps per frame, and frame rate.</li>
+    <li><strong>Reading the result.</strong> Tens of thousands of particles look like noise unless they are shaded and shadowed well enough to show volume, cracks, and compaction.</li>
+  </ul>
+  <p><strong>General approach.</strong></p>
+  <ol>
+    <li>Build a 2D CPU reference of MLS-MPM in TypeScript to validate the math and to debug against.</li>
+    <li>Port to 3D WebGPU compute shaders: particle-to-grid, grid update with boundary and collider handling, grid-to-particle. Use APIC transfers and quadratic B-spline weights.</li>
+    <li>Jelly: fixed corotated hyperelastic model.</li>
+    <li>Snow: the elastoplastic model of Stomakhin et al. 2013. Add singular-value clamping (critical compression and stretch) and hardening to the jelly model.</li>
+    <li>Render particles as shaded sphere impostors with a shadow map. Add camera controls, a parameter panel, and tools to launch snowballs and drop shapes.</li>
+  </ol>
 
-		@media (max-width: 600px) {
-			body {
-				width: 100%;
-				left: 0;
-				transform: none;
-			}
-		}
+  <h2>Goals and Deliverables</h2>
 
-		a {
-			text-decoration: none;
-			color: #0057A8;
-		}
+  <h3>Baseline plan (what we will deliver)</h3>
+  <ul>
+    <li>A 3D MLS-MPM solver running entirely in WebGPU compute shaders.</li>
+    <li>Two materials from the same solver: jelly (elastic) and snow (elastoplastic with hardening).</li>
+    <li>At least 20,000 particles at 30 FPS or better on a laptop GPU.</li>
+    <li>Collisions with the domain walls, the ground, and at least one movable collider (a sphere or box the user drags).</li>
+    <li>Interaction: orbit camera, launch a snowball, drop a jelly shape, reset the scene, and adjust key parameters (stiffness, hardening, gravity, particle count).</li>
+    <li>Rendering: shaded sphere impostors with a directional light and shadow map.</li>
+    <li>Three demo scenes: a jelly block dropping and bouncing; a snowball smashing into a wall; the same shape dropped as jelly and as snow, side by side.</li>
+    <li>A public web page hosting the live demo, the report, and the video.</li>
+  </ul>
 
-		a:hover {
-			color: #8E018E !important;
-			text-decoration: underline;
-		}
-	</style>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS184/284A Homework Webpages</title>
-	</head>
-	<body>
-		<div class="wrapper">
-			<header>
-				<h1 style="align-self:flex-end;">CS184/284A Homework Webpages</h1>
-			</header>
-			<main>
-				<div class="content">
-					<ul>
-						<li><a href="/hw1/index.html">Homework 1</a></li>
-						<li><a href="/hw2/index.html">Homework 2</a></li>
-						<li><a href="/hw3/index.html">Homework 3</a></li>
-						<li><a href="/hw4/index.html">Homework 4</a></li>
-					</ul>
-				</div>
-			</main>
-		</div>
-	</body>
-	<script>
-		var links = document.body.getElementsByTagName("a")
-		var a = window.location.href.indexOf(".io")
-		var repo_name = window.location.href.substring(a+3)
-		for(var i = 0; i < links.length; i++){
-			var link = links[i]
-			var actual_name = link.href.substring(link.href.indexOf(".io")+4)
-			link.href = repo_name + actual_name
-		}
-	</script>
+  <h3>Aspirational plan (if we are ahead of schedule)</h3>
+  <ul>
+    <li>A third material: water (weakly compressible fluid) or sand (Drucker-Prager plasticity).</li>
+    <li>Multi-material scenes, for example a jelly block falling into a snow pile.</li>
+    <li>Better snow shading: screen-space ambient occlusion and a soft subsurface look.</li>
+    <li>Scale to 100,000 particles in real time.</li>
+    <li>Mesh-to-particle sampling, so any OBJ model can be turned into snow or jelly.</li>
+  </ul>
+
+  <h3>How we will measure results</h3>
+  <table class="measure">
+    <thead><tr><th>Question</th><th>Measurement</th></tr></thead>
+    <tbody>
+      <tr><td>Is it real-time?</td><td>FPS and milliseconds per substep at 10k, 20k, 50k, and 100k particles, on an integrated GPU and a discrete GPU</td></tr>
+      <tr><td>Does the GPU port pay off?</td><td>Speedup over our CPU reference at the same particle count</td></tr>
+      <tr><td>Is the solver correct?</td><td>2D GPU output compared against the CPU reference; total mass and momentum conserved through the transfers in a closed box without gravity</td></tr>
+      <tr><td>Is jelly elastic?</td><td>A dropped block returns to its rest shape; report the residual shape error after it settles</td></tr>
+      <tr><td>Is snow plastic?</td><td>A dropped block keeps its deformed, compacted shape; a snowball fractures on impact. Compare visually with figures from Stomakhin et al. 2013</td></tr>
+      <tr><td>Is it stable?</td><td>Largest stable time step for each material at our chosen stiffness</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Questions we plan to answer</h3>
+  <ul>
+    <li>How many particles can a browser simulate in real time with MPM, and which stage is the bottleneck?</li>
+    <li>Which snow parameters (critical compression, critical stretch, hardening) give the most convincing look under a real-time time step budget?</li>
+  </ul>
+
+  <h3>Final deliverables</h3>
+  <ul>
+    <li>Live WebGPU demo on a persistent site.</li>
+    <li>Report web page with technical approach, results, and performance tables.</li>
+    <li>A 1 to 2 minute video showing the three demo scenes, with every member speaking.</li>
+  </ul>
+
+  <h2>Schedule</h2>
+  <p>Work splits into four workstreams, one lead each: solver core, material models, rendering, and interaction plus scenes and the web page.</p>
+  <table>
+    <thead><tr><th>Week</th><th>Dates</th><th>Tasks</th><th>Checkpoint</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td><td>Nov 13 to Nov 22</td>
+        <td>2D CPU reference of MLS-MPM. WebGPU project setup and particle renderer. 3D GPU solver: particle-to-grid with atomics, grid update, grid-to-particle. Jelly model. First snow test with SVD in WGSL. Milestone page, slides, and 1-minute video.</td>
+        <td><strong>Milestone due Nov 22:</strong> jelly running in 3D on the GPU; early snow result</td>
+      </tr>
+      <tr>
+        <td>2</td><td>Nov 23 to Nov 29</td>
+        <td>Finish snow: plasticity clamping and hardening, parameter tuning for stability. Wall, ground, and movable collider. Shadow map and lighting. Camera, parameter panel, snowball launcher.</td>
+        <td>Both baseline materials working and interactive</td>
+      </tr>
+      <tr>
+        <td>3</td><td>Nov 30 to Dec 6</td>
+        <td>Build the three demo scenes. Performance measurements on two GPUs. Aspirational items if time allows: third material, ambient occlusion, 100k particles. Write the report page, record and edit the video.</td>
+        <td><strong>Final report and video due Dec 6</strong></td>
+      </tr>
+      <tr>
+        <td>4</td><td>Dec 7 to Dec 8</td>
+        <td>Rehearse the 5-minute talk and 1-minute live demo. Present. Attend other groups' presentations.</td>
+        <td><strong>Final presentation</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="note"><strong>Fallback.</strong> If the GPU particle-to-grid transfer is not working by Nov 19, we switch to a gather-based transfer (sort particles by cell, each grid node reads its neighbors). If snow is unstable by Nov 27, we lower stiffness and add substeps before cutting any feature.</p>
+
+  <h2>Resources</h2>
+
+  <h3>References</h3>
+  <ol>
+    <li>Stomakhin, Schroeder, Chai, Teran, Selle. "A Material Point Method for Snow Simulation." ACM Transactions on Graphics (SIGGRAPH), 2013. The snow constitutive model and parameters.</li>
+    <li>Hu, Fang, Ge, Qu, Zhu, Pradhana, Jiang. "<a href="https://yzhu.io/publication/mpmmls2018siggraph/paper.pdf">A Moving Least Squares Material Point Method with Displacement Discontinuity and Two-Way Rigid Body Coupling</a>." ACM Transactions on Graphics (SIGGRAPH), 2018. The MLS-MPM formulation we implement.</li>
+    <li>Jiang, Schroeder, Selle, Teran, Stomakhin. "The Affine Particle-In-Cell Method." ACM Transactions on Graphics (SIGGRAPH), 2015. The APIC transfer scheme.</li>
+    <li>Jiang, Schroeder, Teran, Stomakhin, Selle. "The Material Point Method for Simulating Continuous Media Phenomena." SIGGRAPH Courses, 2016. Derivations and the fixed corotated model.</li>
+    <li>nialltl. "<a href="https://nialltl.neocities.org/articles/mpm_guide">Incremental MPM</a>." A step-by-step MLS-MPM tutorial.</li>
+    <li>matsuoka-601. "<a href="https://github.com/matsuoka-601/webgpu-ocean">WebGPU-Ocean</a>." An open-source WebGPU MLS-MPM water simulation. We consult it for the atomics-based particle-to-grid idea only; we do not start from its code, and it has no snow or elastic materials.</li>
+    <li>Klar, Gast, Pradhana, Fu, Schroeder, Jiang, Teran. "Drucker-Prager Elastoplasticity for Sand Animation." ACM Transactions on Graphics (SIGGRAPH), 2016. For the aspirational sand material.</li>
+  </ol>
+
+  <h3>Software</h3>
+  <ul>
+    <li>WebGPU with WGSL compute and render shaders</li>
+    <li>TypeScript, built with Vite</li>
+    <li>A small matrix library (wgpu-matrix or gl-matrix) and a GUI panel (lil-gui)</li>
+    <li>Chrome or Edge with WebGPU enabled</li>
+    <li>GitHub for version control, with each member committing under their own account; GitHub Pages for hosting</li>
+  </ul>
+
+  <h3>Hardware</h3>
+  <ul>
+    <li>Team members' laptops: at least one with integrated graphics and one with a discrete GPU, used for the performance comparison</li>
+  </ul>
+
+  <h3>Starting point</h3>
+  <p>We write the solver, material models, renderer, and interface from scratch. No course starter code or existing simulator is used as a base.</p>
+
+  <footer>CS 184: Computer Graphics and Imaging, UC Berkeley, Fall 2026 · Snowjelly team</footer>
+</main>
+</body>
 </html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS 184 Final Project Milestone: Real-Time Snow &amp; Jelly Simulation (TypeScript + WebGPU MLS-MPM)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --muted: #334155;
+      --subtle: #64748b;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --accent: #0369a1;
+      --accent-soft: #e0f2fe;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.38;
+      -webkit-font-smoothing: antialiased;
+      padding: 1.25rem 0.75rem;
+    }
+
+    /* Sheet wrapper sized to match 1 printed US Letter page */
+    .page-sheet {
+      max-width: 8.5in;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35in 0.4in;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
+    }
+
+    /* 1. Header */
+    header {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 0.45rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .course-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5pt;
+      font-weight: 700;
+      line-height: 1.18;
+      color: var(--ink);
+      letter-spacing: -0.015em;
+    }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5pt;
+      color: var(--muted);
+    }
+
+    /* Section Headings */
+    section {
+      margin-bottom: 0.55rem;
+      break-inside: avoid;
+    }
+
+    section:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 0.15rem;
+      margin-bottom: 0.35rem;
+    }
+
+    /* Grids & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.45rem;
+    }
+
+    .box {
+      border: 1px solid var(--border-light);
+      background: #f8fafc;
+      border-radius: 4px;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .box.warn-box {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .box-title {
+      font-weight: 700;
+      font-size: 8.5pt;
+      color: var(--ink);
+      margin-bottom: 0.18rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .box.warn-box .box-title {
+      color: var(--warn);
+    }
+
+    p, li {
+      font-size: 8.4pt;
+      color: var(--muted);
+    }
+
+    ul.compact-list {
+      list-style: none;
+    }
+
+    ul.compact-list li {
+      position: relative;
+      padding-left: 0.75rem;
+      margin-bottom: 0.18rem;
+    }
+
+    ul.compact-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    ul.compact-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0.1rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .warn-box ul.compact-list li::before {
+      color: var(--warn);
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.7pt;
+      background: #e2e8f0;
+      padding: 0.04rem 0.24rem;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+
+    /* Metrics Strip */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .metric-card {
+      border-left: 3px solid var(--accent);
+      background: #f8fafc;
+      border-top: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      border-radius: 0 4px 4px 0;
+      padding: 0.35rem 0.5rem;
+    }
+
+    .metric-card strong.kpi {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 9.5pt;
+      color: var(--ink);
+    }
+
+    /* Visual Results Strip */
+    .fig-card {
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      break-inside: avoid;
+    }
+
+    .fig-media {
+      position: relative;
+      width: 100%;
+      height: 1.32in;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .fig-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .fig-fallback {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.4rem;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.2pt;
+    }
+
+    .fig-media.is-missing img {
+      display: none;
+    }
+
+    .fig-media.is-missing .fig-fallback {
+      display: flex;
+    }
+
+    .fig-caption {
+      padding: 0.3rem 0.4rem;
+      font-size: 7.8pt;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+
+    .fig-caption strong {
+      color: var(--ink);
+    }
+
+    /* Work Plan Table */
+    table.plan-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.3pt;
+      break-inside: avoid;
+    }
+
+    table.plan-table th,
+    table.plan-table td {
+      border: 1px solid var(--border-light);
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    table.plan-table th {
+      background: #f1f5f9;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--ink);
+      width: 15%;
+    }
+
+    table.plan-table td {
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7pt;
+      font-weight: 600;
+      padding: 0.05rem 0.3rem;
+      border-radius: 3px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-left: 0.25rem;
+    }
+
+    /* Strict Single-Page Print Rules */
+    @page {
+      size: letter portrait;
+      margin: 0.35in;
+    }
+
+    @media print {
+      html, body {
+        width: 8.5in;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page-sheet {
+        max-width: 100%;
+        width: 100%;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .fig-media {
+        height: 1.24in;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="page-sheet">
+    <!-- 1. Header -->
+    <header>
+      <div class="course-tag">UC Berkeley CS 184/284A • Computer Graphics &amp; Imaging</div>
+      <h1>CS 184 Final Project Milestone: Real-Time Snow &amp; Jelly Simulation (TypeScript + WebGPU MLS-MPM)</h1>
+      <div class="meta-bar">
+        <span><strong>Term:</strong> Fall 2026</span>
+        <span><strong>Team:</strong> Michael Kenneth Rodriguez-Thayer, Ruize, Ian</span>
+        <span><strong>Stack:</strong> Vite + TypeScript + WebGPU (WGSL)</span>
+      </div>
+    </header>
+
+    <!-- 2. Summary of Accomplishments -->
+    <section id="accomplishments">
+      <h2>1. Summary of Accomplishments</h2>
+      <div class="grid-2">
+        <div class="box">
+          <div class="box-title">Project Setup &amp; GPU Infrastructure</div>
+          <ul class="compact-list">
+            <li>Initialized Vite + TypeScript + WebGPU repository and verified compute execution on our laptop GPU (<strong>NVIDIA Ampere</strong>).</li>
+            <li>Defined and GPU-verified a shared <code>144 B/particle</code> WGSL struct buffer via an automated host–device memory layout self-test.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <div class="box-title">2D CPU MLS-MPM Reference Solver (Hu et al. 2018)</div>
+          <ul class="compact-list">
+            <li>Implemented APIC affine transfers, quadratic B-spline kernel weights, and <strong>neo-Hookean</strong> elastic jelly constitutive updates.</li>
+            <li>Added Coulomb floor friction and an interactive mouse-driven rigid disk collider across three benchmark scenes.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Preliminary Results & Validation -->
+    <section id="results">
+      <h2>2. Preliminary Results &amp; Validation</h2>
+      <div class="metrics-row">
+        <div class="metric-card">
+          <strong class="kpi">~1e-14 Relative Momentum Error</strong>
+          <p>Linear momentum is conserved to machine precision in a closed box through collisions; all three test scenes stay stable over <code>3 s</code> of simulated time.</p>
+        </div>
+        <div class="metric-card">
+          <strong class="kpi">0.2–0.4 ms/substep (CPU Baseline)</strong>
+          <p>Measured for <code>1.8k–3.9k</code> particles (<code>~30 fps</code> at 80 substeps/frame, <code>~0.5×</code> real time at <code>dt = 2e-4 s</code>), motivating our move to WebGPU compute.</p>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <figure class="fig-card">
+          <div class="fig-media">
+            <img src="drop-t0.40.png" alt="Drop at t = 0.40 s: Jelly block and disk squashing on impact" onerror="this.parentElement.classList.add('is-missing')">
+            <div class="fig-fallback">
+              <span>[drop-t0.40.png]</span>
+              <span>2D Strain Capture (t = 0.40 s)</span>
+            </div>
+          </div>
+          <figcaption class="fig-caption">
+            <code>drop-t0.40.png</code> — <strong>Drop (t = 0.40 s):</strong> Jelly block &amp; disk squashing on impact (color = strain).
+          </figcaption>
+        </figure>
+
+        <figure class="fig-card">
+          <div class="fig-media">
+            <img src="stack-t0.50.png" alt="Stack at t = 0.50 s: Jelly stack deforming under falling disk" onerror="this.parentElement.classList.add('is-missing')">
+            <div class="fig-fallback">
+              <span>[stack-t0.50.png]</span>
+              <span>2D Stack Capture (t = 0.50 s)</span>
+            </div>
+          </div>
+          <figcaption class="fig-caption">
+            <code>stack-t0.50.png</code> — <strong>Stack (t = 0.50 s):</strong> Multi-block jelly stack deforming under a falling disk.
+          </figcaption>
+        </figure>
+
+        <figure class="fig-card">
+          <div class="fig-media">
+            <img src="throw-t0.20.png" alt="Throw at t = 0.20 s: High-velocity jelly block impacting wall" onerror="this.parentElement.classList.add('is-missing')">
+            <div class="fig-fallback">
+              <span>[throw-t0.20.png]</span>
+              <span>2D Wall Impact (t = 0.20 s)</span>
+            </div>
+          </div>
+          <figcaption class="fig-caption">
+            <code>throw-t0.20.png</code> — <strong>Throw (t = 0.20 s):</strong> High-velocity jelly block impacting the boundary wall.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 4. Reflection Relative to Proposal Plan -->
+    <section id="reflection">
+      <h2>3. Reflection Relative to Proposal Plan</h2>
+      <div class="box warn-box">
+        <div class="box-title">Behind Proposal Schedule (Honest Assessment)</div>
+        <ul class="compact-list">
+          <li><strong>3D GPU Solver:</strong> Not yet started (originally slated for Week 1 in the proposal; prioritized 2D physics validation and WGSL buffer verification first).</li>
+          <li><strong>Constitutive Models:</strong> Jelly currently uses neo-Hookean elasticity as a placeholder; upgrading to <strong>fixed corotated</strong> elasticity is next <span class="tag">Ruize</span>.</li>
+          <li><strong>Snow Simulation:</strong> Not yet implemented; <strong>3×3 SVD in WGSL</strong> for snow plasticity and singular value clamping is currently under research <span class="tag">Ruize</span>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Updated Work Plan -->
+    <section id="plan">
+      <h2>4. Updated Work Plan</h2>
+      <table class="plan-table">
+        <tbody>
+          <tr>
+            <th>This Week</th>
+            <td>
+              Implement 2D fixed corotated elasticity; port P2G, grid update, and G2P kernels to <strong>3D WGSL compute</strong> using fixed-point atomics; build initial WebGPU particle renderer <span class="tag">Ian</span>; implement snow with 3×3 SVD singular value clamping <span class="tag">Ruize</span>.
+            </td>
+          </tr>
+          <tr>
+            <th>Next Week</th>
+            <td>
+              Add 3D scene colliders, directional shadow mapping, interactive camera &amp; parameter UI panel, final multi-material demo scenes, and CPU vs. GPU performance benchmark tables.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </article>
+</body>
+</html>

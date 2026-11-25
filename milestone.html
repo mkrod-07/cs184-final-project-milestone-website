@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CS 184 Final Project Milestone: Real-Time Snow &amp; Jelly Simulation (TypeScript + WebGPU MLS-MPM)</title>
+  <title>CS 184 Final Project Milestone: SnowJelly (TypeScript + WebGPU MLS-MPM)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
       padding: 1.25rem 0.75rem;
     }
 
-    /* Sheet wrapper sized to match 1 printed US Letter page */
+ 
     .page-sheet {
       max-width: 8.5in;
       margin: 0 auto;
@@ -86,7 +86,7 @@
       color: var(--muted);
     }
 
-    /* Section Headings */
+
     section {
       margin-bottom: 0.55rem;
       break-inside: avoid;
@@ -108,7 +108,6 @@
       margin-bottom: 0.35rem;
     }
 
-    /* Grids & Cards */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -187,7 +186,7 @@
       color: var(--ink);
     }
 
-    /* Metrics Strip */
+  
     .metrics-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -211,7 +210,7 @@
       color: var(--ink);
     }
 
-    /* Visual Results Strip */
+
     .fig-card {
       border: 1px solid var(--border-light);
       border-radius: 4px;
@@ -236,8 +235,8 @@
 
     .fig-media img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: 115px;
+      object-fit: contain;
       display: block;
     }
 
@@ -272,7 +271,7 @@
       color: var(--ink);
     }
 
-    /* Work Plan Table */
+  
     table.plan-table {
       width: 100%;
       border-collapse: collapse;
@@ -312,7 +311,6 @@
       margin-left: 0.25rem;
     }
 
-    /* Strict Single-Page Print Rules */
     @page {
       size: letter portrait;
       margin: 0.35in;
@@ -346,39 +344,37 @@
 </head>
 <body>
   <article class="page-sheet">
-    <!-- 1. Header -->
     <header>
-      <div class="course-tag">UC Berkeley CS 184/284A • Computer Graphics &amp; Imaging</div>
-      <h1>CS 184 Final Project Milestone: Real-Time Snow &amp; Jelly Simulation (TypeScript + WebGPU MLS-MPM)</h1>
+      <div class="course-tag">UC Berkeley CS 184 • Computer Graphics </div>
+      <h1>CS 184 Final Project Milestone: SnowJelly </h1>
       <div class="meta-bar">
         <span><strong>Term:</strong> Fall 2026</span>
-        <span><strong>Team:</strong> Michael Kenneth Rodriguez-Thayer, Ruize, Ian</span>
+        <span><strong>Team:</strong> Michael, Ian, Ruize, Ziniu</span>
         <span><strong>Stack:</strong> Vite + TypeScript + WebGPU (WGSL)</span>
       </div>
     </header>
 
-    <!-- 2. Summary of Accomplishments -->
     <section id="accomplishments">
       <h2>1. Summary of Accomplishments</h2>
       <div class="grid-2">
         <div class="box">
           <div class="box-title">Project Setup &amp; GPU Infrastructure</div>
           <ul class="compact-list">
-            <li>Initialized Vite + TypeScript + WebGPU repository and verified compute execution on our laptop GPU (<strong>NVIDIA Ampere</strong>).</li>
-            <li>Defined and GPU-verified a shared <code>144 B/particle</code> WGSL struct buffer via an automated host–device memory layout self-test.</li>
+            <li>Initialized Vite + TypeScript + WebGPU repository and verified its execution on our laptop GPU: an <strong>NVIDIA Ampere</strong>.</li>
+            <li>Defined and GPU-verified a shared <code>144 B/particle</code> WGSL struct buffer via a host-device memory layout self-test.</li>
           </ul>
         </div>
         <div class="box">
           <div class="box-title">2D CPU MLS-MPM Reference Solver (Hu et al. 2018)</div>
           <ul class="compact-list">
-            <li>Implemented APIC affine transfers, quadratic B-spline kernel weights, and <strong>neo-Hookean</strong> elastic jelly constitutive updates.</li>
-            <li>Added Coulomb floor friction and an interactive mouse-driven rigid disk collider across three benchmark scenes.</li>
+            <li>Implemented APIC affine transfers, quadratic B-spline weights, and <strong>neo-Hookean</strong> elastic jelly updates.</li>
+            <li>Added floor friction and an interactive mouse-driven disk collider across three benchmark scenes.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- 3. Preliminary Results & Validation -->
+
     <section id="results">
       <h2>2. Preliminary Results &amp; Validation</h2>
       <div class="metrics-row">
@@ -395,20 +391,20 @@
       <div class="grid-3">
         <figure class="fig-card">
           <div class="fig-media">
-            <img src="drop-t0.40.png" alt="Drop at t = 0.40 s: Jelly block and disk squashing on impact" onerror="this.parentElement.classList.add('is-missing')">
+            <img src="images/drop-t0.40.png" alt="Drop at t = 0.40 s: Jelly block and disk squashing on impact" onerror="this.parentElement.classList.add('is-missing')">
             <div class="fig-fallback">
               <span>[drop-t0.40.png]</span>
               <span>2D Strain Capture (t = 0.40 s)</span>
             </div>
           </div>
           <figcaption class="fig-caption">
-            <code>drop-t0.40.png</code> — <strong>Drop (t = 0.40 s):</strong> Jelly block &amp; disk squashing on impact (color = strain).
+            <code>drop-t0.40.png</code> — <strong>Drop (t = 0.40 s):</strong> Jelly block &amp; disk squashing on impact (color => strain).
           </figcaption>
         </figure>
 
         <figure class="fig-card">
           <div class="fig-media">
-            <img src="stack-t0.50.png" alt="Stack at t = 0.50 s: Jelly stack deforming under falling disk" onerror="this.parentElement.classList.add('is-missing')">
+            <img src="images/stack-t0.50.png" alt="Stack at t = 0.50 s: Jelly stack deforming under falling disk" onerror="this.parentElement.classList.add('is-missing')">
             <div class="fig-fallback">
               <span>[stack-t0.50.png]</span>
               <span>2D Stack Capture (t = 0.50 s)</span>
@@ -421,7 +417,7 @@
 
         <figure class="fig-card">
           <div class="fig-media">
-            <img src="throw-t0.20.png" alt="Throw at t = 0.20 s: High-velocity jelly block impacting wall" onerror="this.parentElement.classList.add('is-missing')">
+            <img src="images/throw-t0.20.png" alt="Throw at t = 0.20 s: High-velocity jelly block impacting wall" onerror="this.parentElement.classList.add('is-missing')">
             <div class="fig-fallback">
               <span>[throw-t0.20.png]</span>
               <span>2D Wall Impact (t = 0.20 s)</span>
@@ -434,20 +430,18 @@
       </div>
     </section>
 
-    <!-- 4. Reflection Relative to Proposal Plan -->
     <section id="reflection">
       <h2>3. Reflection Relative to Proposal Plan</h2>
       <div class="box warn-box">
-        <div class="box-title">Behind Proposal Schedule (Honest Assessment)</div>
+        <div class="box-title">Behind Proposal Schedule </div>
         <ul class="compact-list">
-          <li><strong>3D GPU Solver:</strong> Not yet started (originally slated for Week 1 in the proposal; prioritized 2D physics validation and WGSL buffer verification first).</li>
-          <li><strong>Constitutive Models:</strong> Jelly currently uses neo-Hookean elasticity as a placeholder; upgrading to <strong>fixed corotated</strong> elasticity is next <span class="tag">Ruize</span>.</li>
+          <li><strong>3D GPU Solver:</strong> Not yet started (was originally slated for Week 1 in the proposal).</li>
+          <li><strong>Constitutive Models:</strong> Jelly currently uses neo-Hookean elasticity as a placeholder, so upgrading to <strong>fixed corotated</strong> elasticity is next <span class="tag">Ruize</span>.</li>
           <li><strong>Snow Simulation:</strong> Not yet implemented; <strong>3×3 SVD in WGSL</strong> for snow plasticity and singular value clamping is currently under research <span class="tag">Ruize</span>.</li>
         </ul>
       </div>
     </section>
 
-    <!-- 5. Updated Work Plan -->
     <section id="plan">
       <h2>4. Updated Work Plan</h2>
       <table class="plan-table">
@@ -455,13 +449,13 @@
           <tr>
             <th>This Week</th>
             <td>
-              Implement 2D fixed corotated elasticity; port P2G, grid update, and G2P kernels to <strong>3D WGSL compute</strong> using fixed-point atomics; build initial WebGPU particle renderer <span class="tag">Ian</span>; implement snow with 3×3 SVD singular value clamping <span class="tag">Ruize</span>.
+              Implement 2D fixed corotated elasticity; port P2G, grid update, and G2P kernels to <strong>3D WGSL compute</strong> using fixed-point atomics; build initial WebGPU particle renderer <span class="tag">Ian</span>; implement snow with 3×3 SVD singular value clamping.
             </td>
           </tr>
           <tr>
             <th>Next Week</th>
             <td>
-              Add 3D scene colliders, directional shadow mapping, interactive camera &amp; parameter UI panel, final multi-material demo scenes, and CPU vs. GPU performance benchmark tables.
+              Add scene colliders, shadow mapping, interactive camera &amp; parameter UI panel, final multi-material demo scenes, and performance benchmark tables.
             </td>
           </tr>
         </tbody>
